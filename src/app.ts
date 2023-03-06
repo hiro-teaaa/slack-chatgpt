@@ -35,17 +35,24 @@ type Message = {
   content: string
 }
 
+type SlackMessage ={
+  text:  string | undefined
+  bot_id: string
+}
+
 async function chat(messages: Message[]) {
   try {
     const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages,
     })
-
+    console.log(messages)
+    console.log(completion.data.usage?.prompt_tokens)
     return completion.data.choices[0].message!.content
   } catch (e: any) {
     try {
       const code = e.response.data.error.code
+      console.log(e)
       const message = e.response.data.error.message
 
       if (
@@ -104,16 +111,18 @@ app.event('message', async ({ event, context, client, say }) => {
 
   const replies = await client.conversations.replies({
     channel: event.channel,
-    ts: thread_ts,
-    limit: 100,
+    ts: thread_ts
   })
 
+  if(!isBotMentionedInReplies(replies.messages)) return
+  
   if (!replies.messages || replies.messages?.length === 0) return
 
   if (replies.messages[replies.messages.length - 1].bot_id === context.botId)
     return
 
   const threadMessages: Message[] = replies.messages.map((message) => {
+    
     if (message.bot_id === context.botId) {
       return {
         role: 'assistant',
@@ -141,6 +150,15 @@ app.event('message', async ({ event, context, client, say }) => {
   })
 
   const text = await chat(messages)
+
+  console.log(text)
+  // Bot自身がメンションされているかどうかを判定する関数
+  function isBotMentionedInReplies(_messages:Array<any> |undefined) {
+    const messages:Array<SlackMessage> |undefined = _messages
+    return messages?.some(obj => obj.text?.includes(`<@${process.env.BOT_ID}>`))
+  }
+
+  // TODO:チャット文章を分割するロジックを追加
 
   await client.chat.update({
     channel: event.channel,
