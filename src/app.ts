@@ -7,6 +7,18 @@ import {
 
 require('dotenv').config()
 
+import express from 'express';
+
+// 以下のコードを追加
+const expressApp = express();
+expressApp.get('/', (req, res) => {
+  res.send('hi!');
+});
+expressApp.listen(3080, () => {
+  console.log('Server is running on port 3080');
+});
+
+
 const systemContent =
   process.env.SYSTEM_MESSAGE ??
   `
