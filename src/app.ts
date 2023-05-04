@@ -40,6 +40,9 @@ type SlackMessage ={
   bot_id: string
 }
 
+type SlackSendError = 
+{data:{ok:boolean, error:string}}
+
 async function chat(messages: Message[]) {
   try {
     const completion = await openai.createChatCompletion({
@@ -150,19 +153,41 @@ app.event('message', async ({ event, context, client, say }) => {
   })
 
   const text = await chat(messages)
-
+  const splitedText:string[] = splitText(text)
   console.log(text)
+
+
+  // TODO:チャット文章を分割するロジックを追加
+  try {
+    await client.chat.update({
+      channel: event.channel,
+      ts: reply.ts!,
+      text,
+    })
+  }catch (e:any ) {
+    const error:string = e.data.error
+    await client.chat.update({
+      channel: event.channel,
+      ts: reply.ts!,
+      error,
+    })
+  }
+
+  
+})
+
+
+
+function splitText(text: string): string[] {
+  const maxLength = 3000;
+  const regex = new RegExp(`.{1,${maxLength}}`, 'g');
+  const chunks = text.match(regex);
+  return chunks ? chunks : [];
+}
+
+
   // Bot自身がメンションされているかどうかを判定する関数
   function isBotMentionedInReplies(_messages:Array<any> |undefined) {
     const messages:Array<SlackMessage> |undefined = _messages
     return messages?.some(obj => obj.text?.includes(`<@${process.env.BOT_ID}>`))
   }
-
-  // TODO:チャット文章を分割するロジックを追加
-
-  await client.chat.update({
-    channel: event.channel,
-    ts: reply.ts!,
-    text,
-  })
-})
