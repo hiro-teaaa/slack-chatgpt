@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "ts-node-dev src/app.ts",
     "build": "tsc",
-    "start": "node dist/app.js"
+    "start": "ts-node dist/app.js",
+    "deploy": "npm run build && vercel --prod"
   },
   "dependencies": {
     "@slack/bolt": "^3.12.2",

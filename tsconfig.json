@@ -1,10 +1,14 @@
 {
-  "include": ["src/**/*"],
-  "extends": "@tsconfig/recommended/tsconfig.json",
-
   "compilerOptions": {
-    "outDir": "dist",
-    "noImplicitAny": false,
-    "esModuleInterop": true
-  }
+    "baseUrl": "./",
+    "outDir": "./dist/src",
+    "target": "es5",
+    "sourceMap": false,
+    "strict": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node"
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["./src/test/*", "node_modules"]
 }

@@ -11,13 +11,23 @@ import express from 'express';
 
 // 以下のコードを追加
 const expressApp = express();
-expressApp.get('/', (req, res) => {
-  res.send('hi!');
-});
-expressApp.listen(3080, () => {
-  console.log('Server is running on port 3080');
+
+expressApp.use(express.json());
+expressApp.use(express.urlencoded({ extended: true }));
+
+expressApp.get('/', (req: any, res: any) => {
+  try {
+    res.send({ name: "hi" });
+  } catch (error) {
+    res.sendStatus(500);
+  }
 });
 
+//app.listen(process.env.PORT || 3000);
+expressApp.listen({ port: 3000 }, () => {
+  console.log(`Server ready at http://localhost:3000`);
+});
+console.log('starts');
 
 const systemContent =
   process.env.SYSTEM_MESSAGE ??
